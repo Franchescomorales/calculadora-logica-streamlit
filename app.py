@@ -1,10 +1,155 @@
 import streamlit as st
 import re
+import random
 from itertools import product
 import pandas as pd
 
 st.set_page_config(page_title="Calculadora Tabla de la Verdad", layout="centered")
 
+# ---------------------------------------------------------------
+# ESTILOS: fondo animado + panel de integrantes a la derecha
+# ---------------------------------------------------------------
+INTEGRANTES = [
+    "Melany Briggite Guzmán Macias",
+    "Edison Franchesco Morales Piza",
+    "Elkin Javier Morocho Gordillo",
+]
+
+# Dígitos 0/1 flotantes (semilla fija para que no cambien en cada clic)
+rng = random.Random(42)
+digitos_html = ""
+for _ in range(30):
+    d = rng.choice(["0", "1"])
+    left = rng.randint(0, 98)
+    size = rng.randint(16, 42)
+    dur = rng.randint(10, 24)
+    delay = rng.randint(0, 15)
+    digitos_html += (
+        f'<span class="bit" style="left:{left}vw; font-size:{size}px; '
+        f'animation-duration:{dur}s; animation-delay:-{delay}s;">{d}</span>'
+    )
+
+integrantes_html = "".join(f"<li>{n}</li>" for n in INTEGRANTES)
+
+st.markdown(
+    f"""
+    <style>
+    /* Fondo degradado animado */
+    .stApp {{
+        background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1a1a40, #3a1c71);
+        background-size: 400% 400%;
+        animation: gradientBG 18s ease infinite;
+    }}
+    @keyframes gradientBG {{
+        0%   {{ background-position: 0% 50%; }}
+        50%  {{ background-position: 100% 50%; }}
+        100% {{ background-position: 0% 50%; }}
+    }}
+
+    /* Header transparente */
+    header[data-testid="stHeader"] {{ background: transparent; }}
+
+    /* Dígitos 0 y 1 flotando */
+    .bit {{
+        position: fixed;
+        bottom: -60px;
+        color: rgba(0, 255, 200, 0.25);
+        font-family: monospace;
+        font-weight: bold;
+        pointer-events: none;
+        z-index: 0;
+        animation-name: subir;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }}
+    @keyframes subir {{
+        0%   {{ transform: translateY(0) rotate(0deg); opacity: 0; }}
+        10%  {{ opacity: 1; }}
+        90%  {{ opacity: 1; }}
+        100% {{ transform: translateY(-115vh) rotate(360deg); opacity: 0; }}
+    }}
+
+    /* Contenido por encima del fondo y texto claro */
+    .block-container {{ position: relative; z-index: 1; }}
+    .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label,
+    .stApp span, .stApp li {{ color: #f1f5f9; }}
+
+    /* Botones */
+    .stButton > button {{
+        background: rgba(255, 255, 255, 0.10);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.30);
+        backdrop-filter: blur(6px);
+        transition: all 0.2s ease;
+    }}
+    .stButton > button:hover {{
+        background: rgba(0, 255, 200, 0.25);
+        border-color: #00ffc8;
+        transform: translateY(-2px);
+    }}
+    .stButton > button[kind="primary"] {{
+        background: linear-gradient(90deg, #00c6ff, #7b2ff7);
+        border: none;
+    }}
+
+    /* Panel de integrantes (derecha) */
+    .panel-integrantes {{
+        position: fixed;
+        top: 90px;
+        right: 24px;
+        width: 250px;
+        padding: 18px 20px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        z-index: 5;
+    }}
+    .panel-integrantes h4 {{
+        margin: 0 0 10px 0;
+        color: #00ffc8;
+        font-size: 1.05rem;
+        letter-spacing: 1px;
+    }}
+    .panel-integrantes ul {{
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }}
+    .panel-integrantes li {{
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        font-size: 0.92rem;
+        color: #ffffff;
+    }}
+    .panel-integrantes li:last-child {{ border-bottom: none; }}
+
+    /* En pantallas pequeñas el panel pasa a ser un bloque normal */
+    @media (max-width: 1250px) {{
+        .panel-integrantes {{
+            position: relative;
+            top: 0;
+            right: 0;
+            width: auto;
+            margin-bottom: 16px;
+        }}
+    }}
+    </style>
+
+    {digitos_html}
+
+    <div class="panel-integrantes">
+        <h4>👥 INTEGRANTES</h4>
+        <ul>{integrantes_html}</ul>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ---------------------------------------------------------------
+# INTERFAZ
+# ---------------------------------------------------------------
 st.title("🧬 Calculadora de Tabla de la Verdad")
 st.markdown("Construye tu expresión haciendo clic. El resultado se mostrará **exclusivamente en 0 y 1**.")
 
