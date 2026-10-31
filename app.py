@@ -109,14 +109,16 @@ header[data-testid="stHeader"] { background: transparent; }
 .stApp span, .stApp li { color: #e6fff0; }
 
 /* Botones */
-.stButton > button {
+.stButton > button,
+.stDownloadButton > button {
     background: rgba(0, 20, 10, 0.65);
     color: #00ff41;
     border: 1px solid rgba(0, 255, 65, 0.45);
     backdrop-filter: blur(6px);
     transition: all 0.2s ease;
 }
-.stButton > button:hover {
+.stButton > button:hover,
+.stDownloadButton > button:hover {
     background: rgba(0, 255, 65, 0.25);
     border-color: #00ff41;
     color: #ffffff;
@@ -129,6 +131,8 @@ header[data-testid="stHeader"] { background: transparent; }
     border: none;
     font-weight: bold;
 }
+
+.stDownloadButton > button p { color: inherit; }
 
 /* Panel de integrantes (derecha) */
 .panel-integrantes {
@@ -322,8 +326,8 @@ def generar_tabla(expr_raw: str):
 
     tabla = []
 
-    # Generamos combinaciones directamente en 0/1
-    for valores in product([0, 1], repeat=len(variables)):
+    # Generamos combinaciones en 0/1, de mayor a menor (1 primero)
+    for valores in product([1, 0], repeat=len(variables)):
         entorno = {v: bool(val) for v, val in zip(variables, valores)}
         try:
             resultado = eval(expr_norm, {"__builtins__": {}}, entorno)
