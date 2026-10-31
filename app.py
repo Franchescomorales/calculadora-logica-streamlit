@@ -7,7 +7,7 @@ import pandas as pd
 st.set_page_config(page_title="Calculadora Tabla de la Verdad", layout="centered")
 
 # ---------------------------------------------------------------
-# ESTILOS: fondo animado + panel de integrantes a la derecha
+# DATOS
 # ---------------------------------------------------------------
 INTEGRANTES = [
     "Melany Briggite Guzmán Macias",
@@ -15,137 +15,171 @@ INTEGRANTES = [
     "Elkin Javier Morocho Gordillo",
 ]
 
-# Dígitos 0/1 flotantes (semilla fija para que no cambien en cada clic)
-rng = random.Random(42)
-digitos_html = ""
-for _ in range(30):
-    d = rng.choice(["0", "1"])
-    left = rng.randint(0, 98)
-    size = rng.randint(16, 42)
-    dur = rng.randint(10, 24)
-    delay = rng.randint(0, 15)
-    digitos_html += (
-        f'<span class="bit" style="left:{left}vw; font-size:{size}px; '
-        f'animation-duration:{dur}s; animation-delay:-{delay}s;">{d}</span>'
+# ---------------------------------------------------------------
+# FONDO: cielo nocturno con estrellas parpadeantes + lluvia Matrix
+# (semilla fija para que no cambie en cada clic)
+# ---------------------------------------------------------------
+rng = random.Random(7)
+
+# Estrellas que parpadean
+estrellas_html = ""
+for _ in range(110):
+    left = rng.uniform(0, 100)
+    top = rng.uniform(0, 100)
+    size = rng.choice([1, 1, 2, 2, 3])
+    dur = rng.uniform(1.8, 5.0)
+    delay = rng.uniform(0, 5)
+    estrellas_html += (
+        f'<span class="estrella" style="left:{left:.1f}vw; top:{top:.1f}vh; '
+        f'width:{size}px; height:{size}px; '
+        f'animation-duration:{dur:.1f}s; animation-delay:-{delay:.1f}s;"></span>'
+    )
+
+# Lluvia de código estilo Matrix
+CARACTERES = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ0123456789"
+N_COLUMNAS = 32
+matrix_html = ""
+for i in range(N_COLUMNAS):
+    left = i * (100 / N_COLUMNAS) + rng.uniform(0, 1.5)
+    dur = rng.uniform(7, 16)
+    delay = rng.uniform(0, 12)
+    size = rng.choice([14, 16, 18])
+    texto = "<br>".join(rng.choice(CARACTERES) for _ in range(22))
+    matrix_html += (
+        f'<div class="matrix-col" style="left:{left:.1f}vw; font-size:{size}px; '
+        f'line-height:{size + 4}px; animation-duration:{dur:.1f}s; '
+        f'animation-delay:-{delay:.1f}s;">{texto}</div>'
     )
 
 integrantes_html = "".join(f"<li>{n}</li>" for n in INTEGRANTES)
 
-st.markdown(
-    f"""
-    <style>
-    /* Fondo degradado animado */
-    .stApp {{
-        background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1a1a40, #3a1c71);
-        background-size: 400% 400%;
-        animation: gradientBG 18s ease infinite;
-    }}
-    @keyframes gradientBG {{
-        0%   {{ background-position: 0% 50%; }}
-        50%  {{ background-position: 100% 50%; }}
-        100% {{ background-position: 0% 50%; }}
-    }}
+CSS = """
+<style>
+/* Cielo nocturno */
+.stApp {
+    background: radial-gradient(ellipse at 50% 120%, #1b1040 0%, #0b1330 45%, #020617 100%);
+    background-attachment: fixed;
+}
+header[data-testid="stHeader"] { background: transparent; }
 
-    /* Header transparente */
-    header[data-testid="stHeader"] {{ background: transparent; }}
+/* Estrellas parpadeantes */
+.estrella {
+    position: fixed;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+    z-index: 0;
+    animation-name: parpadeo;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+@keyframes parpadeo {
+    0%, 100% { opacity: 0.15; transform: scale(0.7); }
+    50%      { opacity: 1;    transform: scale(1.4); }
+}
 
-    /* Dígitos 0 y 1 flotando */
-    .bit {{
-        position: fixed;
-        bottom: -60px;
-        color: rgba(0, 255, 200, 0.25);
-        font-family: monospace;
-        font-weight: bold;
-        pointer-events: none;
-        z-index: 0;
-        animation-name: subir;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-    }}
-    @keyframes subir {{
-        0%   {{ transform: translateY(0) rotate(0deg); opacity: 0; }}
-        10%  {{ opacity: 1; }}
-        90%  {{ opacity: 1; }}
-        100% {{ transform: translateY(-115vh) rotate(360deg); opacity: 0; }}
-    }}
+/* Lluvia Matrix */
+.matrix-col {
+    position: fixed;
+    top: 0;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+    background: linear-gradient(to bottom, rgba(0,255,65,0) 0%, rgba(0,255,65,0.6) 70%, #b8ffc9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation-name: caer;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+@keyframes caer {
+    from { transform: translateY(-110%); }
+    to   { transform: translateY(100vh); }
+}
 
-    /* Contenido por encima del fondo y texto claro */
-    .block-container {{ position: relative; z-index: 1; }}
-    .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label,
-    .stApp span, .stApp li {{ color: #f1f5f9; }}
+/* Contenido por encima del fondo */
+.block-container { position: relative; z-index: 1; }
+.stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label,
+.stApp span, .stApp li { color: #e6fff0; }
 
-    /* Botones */
-    .stButton > button {{
-        background: rgba(255, 255, 255, 0.10);
-        color: #ffffff;
-        border: 1px solid rgba(255, 255, 255, 0.30);
-        backdrop-filter: blur(6px);
-        transition: all 0.2s ease;
-    }}
-    .stButton > button:hover {{
-        background: rgba(0, 255, 200, 0.25);
-        border-color: #00ffc8;
-        transform: translateY(-2px);
-    }}
-    .stButton > button[kind="primary"] {{
-        background: linear-gradient(90deg, #00c6ff, #7b2ff7);
-        border: none;
-    }}
+/* Botones */
+.stButton > button {
+    background: rgba(0, 20, 10, 0.65);
+    color: #00ff41;
+    border: 1px solid rgba(0, 255, 65, 0.45);
+    backdrop-filter: blur(6px);
+    transition: all 0.2s ease;
+}
+.stButton > button:hover {
+    background: rgba(0, 255, 65, 0.25);
+    border-color: #00ff41;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px rgba(0, 255, 65, 0.5);
+}
+.stButton > button[kind="primary"] {
+    background: linear-gradient(90deg, #00b34a, #00ff41);
+    color: #00220d;
+    border: none;
+    font-weight: bold;
+}
 
-    /* Panel de integrantes (derecha) */
-    .panel-integrantes {{
-        position: fixed;
-        top: 90px;
-        right: 24px;
-        width: 250px;
-        padding: 18px 20px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.10);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-        z-index: 5;
-    }}
-    .panel-integrantes h4 {{
-        margin: 0 0 10px 0;
-        color: #00ffc8;
-        font-size: 1.05rem;
-        letter-spacing: 1px;
-    }}
-    .panel-integrantes ul {{
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }}
-    .panel-integrantes li {{
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        font-size: 0.92rem;
-        color: #ffffff;
-    }}
-    .panel-integrantes li:last-child {{ border-bottom: none; }}
+/* Panel de integrantes (derecha) */
+.panel-integrantes {
+    position: fixed;
+    top: 90px;
+    right: 24px;
+    width: 250px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: rgba(0, 15, 10, 0.55);
+    border: 1px solid rgba(0, 255, 65, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 24px rgba(0, 255, 65, 0.25);
+    z-index: 5;
+}
+.panel-integrantes h4 {
+    margin: 0 0 10px 0;
+    color: #00ff41;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+}
+.panel-integrantes ul { list-style: none; margin: 0; padding: 0; }
+.panel-integrantes li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+    font-size: 0.92rem;
+    color: #ffffff;
+}
+.panel-integrantes li:last-child { border-bottom: none; }
 
-    /* En pantallas pequeñas el panel pasa a ser un bloque normal */
-    @media (max-width: 1250px) {{
-        .panel-integrantes {{
-            position: relative;
-            top: 0;
-            right: 0;
-            width: auto;
-            margin-bottom: 16px;
-        }}
-    }}
-    </style>
+/* En pantallas pequeñas el panel pasa a ser un bloque normal */
+@media (max-width: 1250px) {
+    .panel-integrantes {
+        position: relative;
+        top: 0;
+        right: 0;
+        width: auto;
+        margin-bottom: 16px;
+    }
+}
+</style>
+"""
 
-    {digitos_html}
+PANEL = f"""
+<div class="panel-integrantes">
+    <h4>👥 INTEGRANTES</h4>
+    <ul>{integrantes_html}</ul>
+</div>
+"""
 
-    <div class="panel-integrantes">
-        <h4>👥 INTEGRANTES</h4>
-        <ul>{integrantes_html}</ul>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown(CSS + estrellas_html + matrix_html + PANEL, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------
 # INTERFAZ
