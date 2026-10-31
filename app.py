@@ -172,13 +172,14 @@ header[data-testid="stHeader"] { background: transparent; }
 /* Título con letras animadas (ola + neón) */
 .titulo-animado {
     font-family: "Courier New", monospace;
-    font-size: 1.9rem;
+    font-size: clamp(1.1rem, 3.4vw, 1.8rem);
     font-weight: 800;
     text-align: center;
     margin: 0 0 4px 0;
     line-height: 1.3;
 }
 .titulo-animado .emoji { display: inline-block; margin-right: 8px; animation: girar 4s linear infinite; }
+.titulo-animado .palabra { display: inline-block; white-space: nowrap; }
 .titulo-animado .letra {
     display: inline-block;
     color: #00ff41;
@@ -236,10 +237,16 @@ st.markdown(CSS + estrellas_html + matrix_html + PANEL, unsafe_allow_html=True)
 # INTERFAZ
 # ---------------------------------------------------------------
 TITULO = "Calculadora de Tabla de la Verdad"
-letras = "".join(
-    f'<span class="letra" style="animation-delay:{i * 0.08:.2f}s">{"&nbsp;" if c == " " else c}</span>'
-    for i, c in enumerate(TITULO)
-)
+palabras_html = []
+idx = 0
+for palabra in TITULO.split(" "):
+    spans = ""
+    for c in palabra:
+        spans += f'<span class="letra" style="animation-delay:{idx * 0.08:.2f}s">{c}</span>'
+        idx += 1
+    idx += 1  # espacio
+    palabras_html.append(f'<span class="palabra">{spans}</span>')
+letras = " ".join(palabras_html)
 st.markdown(
     f'<h1 class="titulo-animado"><span class="emoji">🧬</span>{letras}</h1>'
     '<span class="maquina">Lógica binaria: 0 y 1</span>',
