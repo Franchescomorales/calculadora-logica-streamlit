@@ -169,6 +169,57 @@ header[data-testid="stHeader"] { background: transparent; }
         margin-bottom: 16px;
     }
 }
+/* Título con letras animadas (ola + neón) */
+.titulo-animado {
+    font-family: "Courier New", monospace;
+    font-size: 1.9rem;
+    font-weight: 800;
+    text-align: center;
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+}
+.titulo-animado .emoji { display: inline-block; margin-right: 8px; animation: girar 4s linear infinite; }
+.titulo-animado .letra {
+    display: inline-block;
+    color: #00ff41;
+    animation: ola 2.4s ease-in-out infinite;
+}
+@keyframes ola {
+    0%, 100% { transform: translateY(0);    color: #00ff41; text-shadow: 0 0 4px #00ff41; }
+    50%      { transform: translateY(-8px); color: #eafff0;
+               text-shadow: 0 0 6px #ffffff, 0 0 18px #00ff41, 0 0 34px #00ff41; }
+}
+@keyframes girar {
+    0%, 100% { transform: rotate(-12deg) scale(1); }
+    50%      { transform: rotate(12deg) scale(1.2); }
+}
+
+/* Frase que se escribe sola con cursor parpadeante */
+.maquina {
+    display: block;
+    width: 21ch;
+    margin: 0 auto 18px auto;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: "Courier New", monospace;
+    font-size: 1.05rem;
+    color: #00ff41;
+    border-right: 3px solid #00ff41;
+    animation: escribir 6s steps(21, end) infinite, cursor 0.7s step-end infinite;
+}
+@keyframes escribir {
+    0%   { width: 0; }
+    55%  { width: 21ch; }
+    90%  { width: 21ch; }
+    100% { width: 0; }
+}
+@keyframes cursor {
+    0%, 100% { border-color: #00ff41; }
+    50%      { border-color: transparent; }
+}
+
+/* Subtítulos con brillo neón */
+.stApp h2, .stApp h3 { text-shadow: 0 0 8px rgba(0, 255, 65, 0.55); }
 </style>
 """
 
@@ -184,7 +235,16 @@ st.markdown(CSS + estrellas_html + matrix_html + PANEL, unsafe_allow_html=True)
 # ---------------------------------------------------------------
 # INTERFAZ
 # ---------------------------------------------------------------
-st.title("🧬 Calculadora de Tabla de la Verdad")
+TITULO = "Calculadora de Tabla de la Verdad"
+letras = "".join(
+    f'<span class="letra" style="animation-delay:{i * 0.08:.2f}s">{"&nbsp;" if c == " " else c}</span>'
+    for i, c in enumerate(TITULO)
+)
+st.markdown(
+    f'<h1 class="titulo-animado"><span class="emoji">🧬</span>{letras}</h1>'
+    '<span class="maquina">Lógica binaria: 0 y 1</span>',
+    unsafe_allow_html=True,
+)
 st.markdown("Construye tu expresión haciendo clic. El resultado se mostrará **exclusivamente en 0 y 1**.")
 
 # --- Estado de la sesión ---
